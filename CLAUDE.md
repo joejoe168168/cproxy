@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a simple, transparent website proxy service built on Cloudflare Workers with Durable Objects. It provides a direct proxy to https://robot-sms.xyz/ with no authentication required - visiting your Worker URL will show the exact same content as the target website.
+This is a transparent website proxy service built on Cloudflare Workers with Durable Objects. Currently configured to proxy https://claude.ai/ with custom domain support. The service provides direct proxying with URL rewriting and CORS handling.
 
 ## Development Commands
 
@@ -33,27 +33,31 @@ pnpm run cf-typegen  # Generate TypeScript types from Wrangler configuration
 - **PNPM** for package management
 
 **Key Features:**
-- **Transparent Proxying**: All requests are directly proxied to https://robot-sms.xyz/
+- **Transparent Proxying**: All requests are directly proxied to https://claude.ai/
 - **URL Rewriting**: HTML content is modified so all links work through the proxy
 - **CORS Support**: Handles cross-origin requests properly
+- **Custom Domain Support**: Configured for c.hkcot.com and claude.hkcot.com domains
 - **No Authentication**: Direct access without any login or API keys required
 
 ## How It Works
 
-1. **Request Flow**: User visits your Worker URL → Request goes to WebsiteProxy Durable Object → Proxy fetches from robot-sms.xyz → Response sent back to user
+1. **Request Flow**: User visits your Worker URL → Request goes to WebsiteProxy Durable Object → Proxy fetches from claude.ai → Response sent back to user
 2. **URL Rewriting**: HTML responses are processed to rewrite URLs so they point through your proxy
 3. **Header Management**: Appropriate headers are set/removed to ensure proper proxying
-
-## Usage
-
-Simply visit your deployed Worker URL and you'll see the exact same website as https://robot-sms.xyz/ - no setup or configuration needed.
+4. **CORS Handling**: CORS headers are automatically added to all responses
 
 ## Configuration
 
 **Wrangler Configuration (wrangler.jsonc):**
-- Uses `WebsiteProxy` Durable Object
-- No environment variables required
-- Target URL is hardcoded to `https://robot-sms.xyz`
+- Uses `WebsiteProxy` Durable Object with SQLite migration
+- Custom domains: c.hkcot.com and claude.hkcot.com
+- Target URL hardcoded to `https://claude.ai` in handler.ts
+- Observability enabled for monitoring
+
+**Key Configuration Points:**
+- Target URL defined as `TARGET_BASE_URL` constant in `src/handler.ts`
+- Durable Object namespace binding: `WEBSITE_PROXY`
+- Custom domain routes configured in wrangler.jsonc
 
 ## Code Style
 

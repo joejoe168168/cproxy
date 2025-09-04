@@ -1,6 +1,6 @@
 import { DurableObject } from 'cloudflare:workers';
 
-const TARGET_BASE_URL = 'https://robot-sms.xyz';
+const TARGET_BASE_URL = 'https://claude.ai';
 
 const fixCors = ({ headers, status, statusText }: { headers?: HeadersInit; status?: number; statusText?: string }) => {
 	const newHeaders = new Headers(headers);
@@ -134,8 +134,26 @@ export class WebsiteProxy extends DurableObject {
 		html = html.replace(/src="\/(?!\/)/g, `src="${proxyBase}/`);
 		html = html.replace(/action="\/(?!\/)/g, `action="${proxyBase}/`);
 		
+		// Handle additional attributes that may contain URLs
+		html = html.replace(/data-src="\/(?!\/)/g, `data-src="${proxyBase}/`);
+		html = html.replace(/srcset="\/(?!\/)/g, `srcset="${proxyBase}/`);
+		html = html.replace(/content="\/(?!\/)/g, `content="${proxyBase}/`);
+		html = html.replace(/url\(\/(?!\/)/g, `url(${proxyBase}/`);
+		
 		// Handle protocol-relative URLs
-		html = html.replace(/\/\/robot-sms\.xyz/g, `//${originalUrl.host}`);
+		html = html.replace(/\/\/claude\.ai/g, `//${originalUrl.host}`);
+		
+		// Handle JavaScript strings that might contain URLs
+		html = html.replace(/"https:\/\/claude\.ai/g, `"${proxyBase}`);
+		html = html.replace(/'https:\/\/claude\.ai/g, `'${proxyBase}`);
+		html = html.replace(/`https:\/\/claude\.ai/g, `\`${proxyBase}`);
+		
+		// Handle JSON objects that might contain URLs
+		html = html.replace(/"claude\.ai"/g, `"${originalUrl.host}"`);
+		
+		// Handle manifest and other meta references
+		html = html.replace(/manifest="\/(?!\/)/g, `manifest="${proxyBase}/`);
+		html = html.replace(/crossorigin="\/(?!\/)/g, `crossorigin="${proxyBase}/`);
 		
 		return html;
 	}

@@ -26,11 +26,11 @@
 	},
 	"routes": [
 		{
-			"pattern": "s.hkcot.com/*",
+			"pattern": "c.hkcot.com/*",
 			"custom_domain": true
 		},
 		{
-			"pattern": "sms.hkcot.com/*", 
+			"pattern": "claude.hkcot.com/*", 
 			"custom_domain": true
 		}
 	],

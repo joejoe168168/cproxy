@@ -1,100 +1,103 @@
-# Gemini API 负载均衡器 (gemini-balance-do)
+# Website Proxy Service
 
-> 参考项目：https://github.com/tech-shrimp/gemini-balance-lite ，基于爬爬虾的项目改造了一下，更适合在 cloudflare worker 中使用，即使是广东用户也不担心，哪怕你请求的 worker 节点在香港，最后请求也会路由到美国再向 Gemini 发起请求！
+A transparent website proxy service built on Cloudflare Workers with Durable Objects. This service provides direct proxying to https://claude.ai/ with custom domain support and URL rewriting capabilities.
 
-这是一个部署在 Cloudflare Workers 上的 Gemini API 负载均衡器和代理服务，使用了 Durable Objects 来存储和管理 API 密钥。
+## ✨ Features
 
-Youtube: https://youtu.be/_5a6HfL2wn4
+*   **Transparent Proxying**: All requests are directly proxied to https://claude.ai/
+*   **URL Rewriting**: HTML content is modified so all links work through the proxy
+*   **CORS Support**: Handles cross-origin requests properly
+*   **Custom Domain Support**: Configured for c.hkcot.com and claude.hkcot.com domains
+*   **No Authentication**: Direct access without any login or API keys required
+*   **Durable Objects**: Uses Cloudflare Durable Objects for reliable request handling
+*   **Enhanced URL Rewriting**: Handles complex web applications with JavaScript strings, JSON objects, and various HTML attributes
 
-> 假如视频对你有帮助，别忘了帮我点个赞，有什么问题也可以在评论区讨论😂
+## 🚀 Deployment
 
-它旨在解决以下问题：
-*   将多个 Gemini API 密钥聚合到一个端点中。
-*   通过随机轮询密钥池来实现请求的负载均衡。
-*   提供与 OpenAI API 兼容的接口，使现有工具可以轻松集成。
+You can deploy this project to your own Cloudflare account using the following methods:
 
-## ✨ 主要功能
+### Method 1: Deploy via Wrangler CLI
 
-*   **Gemini API 代理**: 作为 Google Gemini API 的稳定代理。
-*   **负载均衡**: 在配置的多个 API 密钥之间随机分配请求。
-*   **OpenAI API 格式兼容**: 支持 `/v1/chat/completions`, `/v1/embeddings` 和 `/v1/models` 等常用 OpenAI 端点。
-*   **流式响应**: 完全支持 Gemini API 的流式响应。
-*   **API 密钥管理**:
-    *   提供一个简单的 Web UI 用于批量添加和查看 API 密钥。
-    *   提供 API 接口用于检查并自动清理失效的密钥。
-*   **持久化存储**: 使用 Cloudflare Durable Objects 内的 SQLite 安全地存储 API 密钥。
-
-## 🚀 部署
-
-你可以通过以下两种方式将此项目部署到你自己的 Cloudflare 账户：
-
-### 方法一：通过 Wrangler CLI 部署
-
-1.  **克隆项目**
+1.  **Clone the project**
     ```bash
-    git clone https://github.com/zaunist/gemini-balance-do.git
-    cd gemini-balance-do
+    git clone <repository-url>
+    cd website-proxy
     ```
 
-2.  **安装依赖**
+2.  **Install dependencies**
     ```bash
     pnpm install
     ```
 
-3.  **登录 Wrangler**
+3.  **Login to Wrangler**
     ```bash
     npx wrangler login
     ```
 
-4.  **部署到 Cloudflare**
+4.  **Deploy to Cloudflare**
     ```bash
     pnpm run deploy
     ```
-    部署成功后，Wrangler 会输出你的 Worker URL。
+    After successful deployment, Wrangler will output your Worker URL.
 
-### 方法二：通过 Cloudflare Dashboard 部署 (推荐)
+### Method 2: Deploy via Cloudflare Dashboard (Recommended)
 
-1.  **Fork 项目**: 点击本仓库右上角的 "Fork" 按钮，将此项目复刻到你自己的 GitHub 账户。
+1.  **Fork the project**: Click the "Fork" button in the top right corner of this repository to fork it to your own GitHub account.
 
-2.  **登录 Cloudflare**: 打开 [Cloudflare Dashboard](https://dash.cloudflare.com/)。
+2.  **Login to Cloudflare**: Open [Cloudflare Dashboard](https://dash.cloudflare.com/).
 
-3.  **创建 Worker**:
-    *   在左侧导航栏中，进入 `Workers & Pages`。
-    *   点击 `创建应用程序` -> `连接到 Git`。
-    *   选择你刚刚 Fork 的仓库。
-    *   在“构建和部署”设置中，Cloudflare 通常会自动检测到这是一个 Worker 项目，无需额外配置。
-    *   点击 `保存并部署`。
+3.  **Create Worker**:
+    *   In the left navigation bar, go to `Workers & Pages`.
+    *   Click `Create Application` -> `Connect to Git`.
+    *   Select your forked repository.
+    *   In the "Build and Deploy" settings, Cloudflare will usually automatically detect this as a Worker project with no additional configuration needed.
+    *   Click `Save and Deploy`.
 
-## 🔑 API 密钥管理
+## 🔧 Development
 
-部署完成后，你可以通过访问你的 Worker URL 来管理 Gemini API 密钥。
+```bash
+# Start development server
+pnpm run dev
 
-*   **访问管理面板**: 在浏览器中打开你的 Worker URL (例如 `https://gemini-balance-do.your-worker.workers.dev`)，首次访问会显示登录框，需要输入你的 HOME_ACCESS_KEY 进行认证，认证通过后才能进入管理页面。
-*   **批量添加密钥**: 在文本框中输入你的 Gemini API 密钥，每行一个，然后点击“添加密钥”。
-*   **查看和刷新**: 在右侧面板可以查看已存储的密钥，并可以点击“刷新”按钮更新列表。
-*   **一键检查**： 点击“一键检查”按钮，可以检查 API key 可用性。
-*   **批量删除**： 选中无效的 API key，可以一键删除所有无效的 API key。
+# Alternative development command
+pnpm start
 
-**管理面板访问密钥为 `7b18e536c27ab304266db3220b8e000db8fbbe35d6e1fde729a1a1d47303858d`，用于访问管理面板和管理 API 时的身份验证，强烈建议你在Cloudflare Worker环境变量中修改 `HOME_ACCESS_KEY` 的值，修改完成后重新部署即可。**
+# Generate TypeScript types from Wrangler configuration
+pnpm run cf-typegen
+```
 
-## 💻 API 用法
+## 📖 How It Works
 
-使用方式，在 AI 客户端中，填入以下配置：
+1. **Request Flow**: User visits your Worker URL → Request goes to WebsiteProxy Durable Object → Proxy fetches from claude.ai → Response sent back to user
+2. **URL Rewriting**: HTML responses are processed to rewrite URLs so they point through your proxy
+3. **Header Management**: Appropriate headers are set/removed to ensure proper proxying
+4. **CORS Handling**: CORS headers are automatically added to all responses
 
-BaseURL: <你的worker地址>
+## ⚙️ Configuration
 
-API 密钥: `<你的AUTH_KEY>`
+The service is configured through `wrangler.jsonc`:
 
-**默认 API 密钥为 `ajielu`，强烈建议你在Cloudflare Worker环境变量中修改 `AUTH_KEY` 的值，并重新部署 Worker。**
+- **Durable Objects**: Uses `WebsiteProxy` Durable Object with SQLite migration
+- **Custom Domains**: Configured for c.hkcot.com and claude.hkcot.com
+- **Target URL**: Hardcoded to `https://claude.ai` in `src/handler.ts`
+- **Observability**: Monitoring enabled for performance tracking
 
+To change the target website, modify the `TARGET_BASE_URL` constant in `src/handler.ts`.
 
-### 管理 API
+## 🏗️ Architecture
 
-所有管理 API 均需在请求头添加 `Authorization: Bearer <你的HOME_ACCESS_KEY>` 或自动携带 cookie `auth-key` 进行认证：
+**Core Components:**
+- `src/index.ts` - Simple routing that forwards all requests to Durable Object
+- `src/handler.ts` - WebsiteProxy Durable Object that handles all proxy logic
 
-*   `GET /api/keys`: 获取所有已存储的 API 密钥。
-*   `POST /api/keys`: 批量添加 API 密钥。请求体为 `{"keys": ["key1", "key2"]}`。
-*   `GET /api/keys/check`: 检查所有密钥的有效性。
-*   `DELETE /api/keys`: 批量删除 API 密钥。请求体为 `{"keys": ["key1", "key2"]}`。
+**Technology Stack:**
+- Cloudflare Workers + Durable Objects for serverless execution
+- Hono web framework for basic routing
+- TypeScript with strict configuration
+- PNPM for package management
 
-普通 Gemini/OpenAI API 调用只需使用 `AUTH_KEY`，无需管理权限认证
+## 💻 Usage
+
+Simply visit your deployed Worker URL and you'll see the exact same website as https://claude.ai/ - no setup or configuration needed. All links and resources will work seamlessly through the proxy.
+
+**Note**: Claude.ai may have additional security measures or authentication requirements that could affect proxy functionality. The enhanced URL rewriting includes handling for JavaScript strings, JSON objects, and various HTML attributes to support complex web applications.
